@@ -27,4 +27,31 @@ class Network(object):
 
 
 if __name__ == "__main__":
-    1
+    l1 = inputlayer(100,X)
+    l2 = Relu(3)
+    l3 = Sigmoid(5)
+    l4 = outputlayer(10,cost(Y))
+    network(X, Y, cost, [l1, l2, l3, l4])
+
+    a1 = l1.feedforward()
+
+    z2 = np.dot(w1,a1)
+    a2 = l2.feedforward(z2)
+
+    z3 = np.dot(w2,a2)
+    a3 = l3.feedforward(z3)
+
+    z4 = np.dot(w3,a3)
+    a4 = l4.feedforward(z4)
+
+    y = cost(a4)
+
+    delta4 = l4.backpropagate(y)
+
+    delta3 = l3.backpropagate(delta4, w3)
+
+    delta2 = l2.backpropagate(delta3, w2)
+
+    update(w1, l1.a(), l2.delta())
+    update(w2, l2.a(), l3.delta())
+    update(w3, l3.a(), l4.delta())
