@@ -27,11 +27,11 @@ class Network(object):
 
 
 if __name__ == "__main__":
-    l1 = inputlayer(100,X)
+    l1 = inputlayer(100, X)
     l2 = Relu(3)
     l3 = Sigmoid(5)
-    l4 = outputlayer(10,cost(Y))
-    network(X, Y, cost, [l1, l2, l3, l4])
+    l4 = outputlayer(10, XYcost())
+    network(X, Y, cost, [l1, l2, l3, l4])  # call setx(), sety(), define W, b,
 
     a1 = l1.feedforward()
 

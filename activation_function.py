@@ -12,15 +12,32 @@ def sigmoidprime(x):
 def relu(x):
     if isinstance(x, int):
         return np.maximum(x, 0)
-    if isinstance(x, np.ndarray):
+    elif isinstance(x, np.ndarray):
         return np.maximum(x, np.zeros(x.shape))
 
 
 def reluprime(x):
     if isinstance(x, int):
         return 1 if x > 0 else 0
-    if isinstance(x, np.ndarray):
+    elif isinstance(x, np.ndarray):
         return np.greater(x, np.zeros(x.shape)).astype(int)
+    else:
+        raise TypeError
+
+
+def softmax(x):
+    if isinstance(x, np.ndarray):
+        return np.exp(x) / np.sum(np.exp(x))
+    else:
+        raise TypeError
+
+
+def softmaxprime(x):
+    if isinstance(x, np.ndarray):
+        raise NotImplementedError
+    else:
+        raise TypeError
+
 
 if __name__ == "__main__":
 

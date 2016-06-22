@@ -8,7 +8,7 @@ class HiddenLayer(object):
     __metaclass__ = ABCMeta
 
     def __init__(self, size_):
-        self.__size = size_
+        self._size = size_
         self._z = None  # will be assigned in sigma()
         self._delta = None
 
@@ -17,7 +17,7 @@ class HiddenLayer(object):
         Return size
         :return: int
         """
-        return self.__size
+        return self._size
 
     def feedforward(self, z):
         """
