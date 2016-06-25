@@ -1,105 +1,45 @@
 import numpy as np
-from abc import ABCMeta, abstractmethod
 
+from layer import Sigmoid, Softmax
 
-import activation_function as fn
-
-
-class OutputLayer(object):
-    __metaclass__ = ABCMeta
+class SigmoidOutput(Sigmoid):
 
     def __init__(self, size_, cost_):
-        self._size = size_
-        self._z = None
-        self._delta = None
+        super(SigmoidOutput, self).__init__(size_)
+        self._cost = cost_()
 
-    def size(self):
-        """
-        Return size
-        :return: int
-        """
-        return self._size
+    def cost(self, y):
+        return self._cost.cost(self._a, y)
 
-    def feedforward(self, z):
-        """
-        Save z, and return a = sigma(z)
-        :param z: np.array
-        :return: np.array
-        """
-        self._z = z
-        return self.sigma()
+    def accuracy(self, y):
+        return int(np.argmax(self._a) == np.argmax(y))
 
-    def backpropagate(self, delta_right, w_right):
-        """
-        Calculate, save, and return delta = dC/dz = dot(w_right, delta_right) * sigmaprime(z)
-        :param delta_right: np.array, delta from (l+1)th layer
-        :param w_right: np.array, w connecting (l)th and (l+1)th layer
-        :return: np.array
-        """
-        self._delta = np.dot(w_right.T, delta_right) * self.sigmaprime(self._z)
+    def delta_L(self, y):
+        self._delta = np.dot(self.sigmaprime().T,  self._cost.cprime(self._a, y))
         return self._delta
 
-    def a(self):
-        """
-        Return a = sigma(z)
-        :return: np.array
-        """
-        return self.sigma()
+    def evaluate(self, y):
+        return self.cost(y), self.accuracy(y)
 
-    def delta(self):
-        """
-        Return delta
-        :return: np.array
-        """
+
+class SoftmaxOutput(Softmax):
+
+    def __init__(self, size_, cost_):
+        super(SoftmaxOutput, self).__init__(size_)
+        self._cost = cost_()
+
+    def cost(self, y):
+        return self._cost.cost(self._a, y)
+
+    def accuracy(self, y):
+        return int(np.argmax(self._a) == np.argmax(y))
+
+    def delta_L(self, y):
+        self._delta = np.dot(self.sigmaprime().T,  self._cost.cprime(self._a, y))
         return self._delta
 
-    @abstractmethod
-    def sigma(self):
-        """
-        Return a = sigma(z)
-        :return: np.array
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def sigmaprime(self):
-        """
-        Returns da/dz = d(sigma(z))/dz
-        This is different to sigmaprime() in HiddenLayer because it is 2D
-        (i,j) element is d(a_i)/d(z_j) = d(sigma(z_i))/d(z_j) <-- ?? check
-        :return: 2D np.array
-        """
-        raise NotImplementedError
-
-
-class SigmoidOutput(OutputLayer):
-
-    def __init__(self, size_, cost_):
-        super(SigmoidOutput, self).__init__(size_, cost_)
-
-    def sigma(self):
-        return fn.sigmoid(self._z)
-
-    def sigmaprime(self):
-        return fn.sigmoidprime(self._z)
-
-    def delta(self, z, y):
-        return SigmoidOutput.sigma(z)-y
-
-
-class SoftmaxOutput(OutputLayer):
-
-    def __init__(self, size_, cost_):
-        super(SoftmaxOutput, self).__init__(size_, cost_)
-
-    def sigma(self, z):
-        return fn.softmax(z)
-
-    def sigmaprime(self, z):
-        raise NotImplementedError
-
-    def delta(self, z, y):
-        return SoftmaxOutput.sigma(z)-y
+    def evaluate(self, y):
+        return self.cost(y), self.accuracy(y), self.delta(y)
 
 
 if __name__ == "__main__":

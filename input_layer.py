@@ -1,50 +1,46 @@
-class InputLayer(object):
+import numpy as np
+
+
+class Input(object):
 
     def __init__(self, size_):
         self._size = size_
-        self._x = None
+        self._a = None
 
-    def size(self):
+    def set_a(self, a_):
+        """
+        Set a = x
+        :param a_ : np.array
+        :return: np.array
+        """
+        if isinstance(a_, np.ndarray):
+            self._a = a_
+            return
+        else:
+            raise TypeError
+
+    def get_size(self):
         """
         Return size
         :return: int
         """
-        return self._size
+        if self._size is not None:
+            return self._size
+        else:
+            raise ValueError
 
-    def setx(self, x_):
+    def get_a(self):
         """
-        Set x
-        :return:
+        Return a = sigma(z)
+        :return: np.array
         """
-        self._x = x_
+        if self._a is not None:
+            return self._a
+        else:
+            raise ValueError
+
+    def feedforward(self, *args):
+        return self.get_a()
+
+    def backpropagate(self, *args):
         return
-
-    def feedforward(self):
-        """
-        Return x
-        :return: np.array
-        """
-        if self._x is not None:
-            return self._x
-        else:
-            raise ValueError
-
-    def a(self):
-        """
-        Return a = x
-        :return: np.array
-        """
-        if self._x is not None:
-            return self._x
-        else:
-            raise ValueError
-
-
-if __name__ == "__main__":
-    import numpy as np
-
-    x = np.array([-2, 0, 2])
-
-    q = InputLayer(3)
-    q.setx(x)
-    print(q.a())
