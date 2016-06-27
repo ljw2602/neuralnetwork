@@ -132,7 +132,7 @@ class Softmax(Layer):
 if __name__ == "__main__":
 
     from cost import QuadraticCost, CrossEntropyCost, LogLikelihoodCost
-    from output_layer import SigmoidOutput, SoftmaxOutput
+    from layer_output import SigmoidOutput, SoftmaxOutput
 
     b = np.array([-5, 1, 2])
     w = np.array([[1,2,3],[2,3,4],[-2,3,-5]])

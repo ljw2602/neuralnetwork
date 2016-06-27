@@ -17,6 +17,7 @@ def sigmoidprime(z):
     if isinstance(z, int):
         return sigmoid(z) * (1-sigmoid(z))
     elif isinstance(z, np.ndarray):
+        z = z.ravel()  # (n,1) array to (n,) array
         return np.diag(sigmoid(z) * (1-sigmoid(z)))
     else:
         raise TypeError
@@ -40,6 +41,7 @@ def reluprime(z):
     if isinstance(z, int):
         return 1 if z > 0 else 0
     elif isinstance(z, np.ndarray):
+        z = z.ravel()  # (n,1) array to (n,) array
         return np.diag(np.greater(z, np.zeros(z.shape)).astype(int))
     else:
         raise TypeError
@@ -61,6 +63,7 @@ def softmaxprime(z):
     :return: np.array
     """
     if isinstance(z, np.ndarray):
+        z = z.ravel()  # (n,1) array to (n,) array
         a = softmax(z)
         return -np.dot(colvec(a), colvec(a).T) + np.diag(a**2) + np.diag(a*(1-a))
     else:
@@ -69,7 +72,7 @@ def softmaxprime(z):
 
 if __name__ == "__main__":
 
-    z = np.array([-2, 0, 2])
+    z = np.array([[-2], [0], [2]])
 
     print(sigmoid(z))
     print([sigmoid(-2), sigmoid(0), sigmoid(2)])

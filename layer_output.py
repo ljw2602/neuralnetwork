@@ -8,18 +8,18 @@ class SigmoidOutput(Sigmoid):
         super(SigmoidOutput, self).__init__(size_)
         self._cost = cost_()
 
+    def delta_L(self, y):
+        self._delta = np.dot(self.sigmaprime().T,  self._cost.cprime(self._a, y))
+        return self._delta
+
     def cost(self, y):
         return self._cost.cost(self._a, y)
 
     def accuracy(self, y):
         return int(np.argmax(self._a) == np.argmax(y))
 
-    def delta_L(self, y):
-        self._delta = np.dot(self.sigmaprime().T,  self._cost.cprime(self._a, y))
-        return self._delta
-
-    def evaluate(self, y):
-        return self.cost(y), self.accuracy(y)
+    # def evaluate(self, y):
+    #     return self.cost(y), self.accuracy(y)
 
 
 class SoftmaxOutput(Softmax):
@@ -38,8 +38,8 @@ class SoftmaxOutput(Softmax):
         self._delta = np.dot(self.sigmaprime().T,  self._cost.cprime(self._a, y))
         return self._delta
 
-    def evaluate(self, y):
-        return self.cost(y), self.accuracy(y), self.delta(y)
+    # def evaluate(self, y):
+    #     return self.cost(y), self.accuracy(y), self.delta(y)
 
 
 if __name__ == "__main__":
