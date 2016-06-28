@@ -14,20 +14,20 @@ def main():
     # validation_data = list(zip(X, Y))
 
     training_data, validation_data, test_data = load_data_wrapper()
-    training_data = training_data[:1000]
+    training_data = training_data#[:1000]
 
     l0 = Input(training_data[0][0].size)
-    l1 = Sigmoid(30)
+    l1 = Sigmoid(100)
     # l2 = Relu(3)
     # l3 = Softmax(3)
     # l4 = SoftmaxOutput(3, LogLikelihoodCost)
     l4 = SigmoidOutput(10, CrossEntropyCost)
     layers = np.array([l0, l1, l4])
 
-    epoch = 400
+    epoch = 30
     mini_batch_size = 10
     eta = 0.5
-    lam = 0.1
+    lam = 5.0
 
     nn = Network(layers, eta, mini_batch_size, epoch, lam)
 
