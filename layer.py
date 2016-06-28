@@ -9,9 +9,6 @@ class Layer(object):
 
     def __init__(self, size_):
         self._size = size_
-        self._z = None
-        self._a = None
-        self._delta = None
 
     def get_size(self):
         """
@@ -23,36 +20,6 @@ class Layer(object):
         else:
             raise ValueError
 
-    def get_z(self):
-        """
-        Return z
-        :return: np.array
-        """
-        if self._z is not None:
-            return self._z
-        else:
-            raise ValueError
-
-    def get_a(self):
-        """
-        Return a = sigma(z)
-        :return: np.array
-        """
-        if self._a is not None:
-            return self._a
-        else:
-            raise ValueError
-
-    def get_delta(self):
-        """
-        Return delta
-        :return: np.array
-        """
-        if self._delta is not None:
-            return self._delta
-        else:
-            raise ValueError
-
     def feedforward(self, b, w, a):
         """
         Save z = b + w a_in, and return a_out = sigma(z)
@@ -61,22 +28,21 @@ class Layer(object):
         :param a: np.array
         :return: np.array
         """
-        self._z = b + np.dot(w, a)
-        self._a = self.sigma()
-        return self._a
+        z = b + np.dot(w, a)
+        a = self.sigma(z)
+        return z, a
 
-    def backpropagate(self, delta_right, w_right):
+    def backpropagate(self, z, delta_right, w_right):
         """
         Calculate, save, and return delta = dC/dz = dot(w_right, delta_right) * sigmaprime(z)
         :param delta_right: np.array, delta from (l+1)th layer
         :param w_right: np.array, w connecting (l)th and (l+1)th layer
         :return: np.array
         """
-        self._delta = np.dot(self.sigmaprime().T, np.dot(w_right.T, delta_right))
-        return self._delta
+        return np.dot(self.sigmaprime(z).T, np.dot(w_right.T, delta_right))
 
     @abstractmethod
-    def sigma(self):
+    def sigma(self, z):
         """
         Return a = sigma(z)
         :return: np.array
@@ -84,7 +50,7 @@ class Layer(object):
         raise NotImplementedError
 
     @abstractmethod
-    def sigmaprime(self):
+    def sigmaprime(self, z):
         """
         Returns da/dz = d(sigma(z))/dz
         (i,j)th element corresponds to d(a_{i})/d(z_{j})
@@ -98,11 +64,11 @@ class Sigmoid(Layer):
     def __init__(self, size_):
         super(Sigmoid, self).__init__(size_)
 
-    def sigma(self):
-        return fn.sigmoid(self._z)
+    def sigma(self, z):
+        return fn.sigmoid(z)
 
-    def sigmaprime(self):
-        return fn.sigmoidprime(self._z)
+    def sigmaprime(self, z):
+        return fn.sigmoidprime(z)
 
 
 class Relu(Layer):
@@ -110,11 +76,11 @@ class Relu(Layer):
     def __init__(self, size_):
         super(Relu, self).__init__(size_)
 
-    def sigma(self):
-        return fn.relu(self._z)
+    def sigma(self, z):
+        return fn.relu(z)
 
-    def sigmaprime(self):
-        return fn.reluprime(self._z)
+    def sigmaprime(self, z):
+        return fn.reluprime(z)
 
 
 class Softmax(Layer):
@@ -122,11 +88,11 @@ class Softmax(Layer):
     def __init__(self, size_):
         super(Softmax, self).__init__(size_)
 
-    def sigma(self):
-        return fn.softmax(self._z)
+    def sigma(self, z):
+        return fn.softmax(z)
 
-    def sigmaprime(self):
-        return fn.softmaxprime(self._z)
+    def sigmaprime(self, z):
+        return fn.softmaxprime(z)
 
 
 if __name__ == "__main__":

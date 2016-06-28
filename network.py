@@ -39,46 +39,58 @@ class Network(object):
         return sizes, weights, biases
 
     def feedforward(self, x):
-        self._layers[0].set_a(x)
-
-        a = self._layers[0].get_a()
+        z_lib = []
+        a_lib = []
+        a = x
         for i, ly in enumerate(self._layers[1:]):
-            a = ly.feedforward(self._biases[i], self._weights[i], a)
-        return
+            z, a = ly.feedforward(self._biases[i], self._weights[i], a)
+            z_lib.append(z)
+            a_lib.append(a)
 
-    def backpropagate(self, y):
-        delta = self._layers[-1].delta_L(y)
-        for i, ly in enumerate(self._layers[::-1][1:]):
-            delta = ly.backpropagate(delta, self._weights[self._num_layers-2-i])
-        return
+        assert len(z_lib) == self._num_layers-1, "Check the length of z_lib"
+        assert len(a_lib) == self._num_layers-1, "Check the length of a_lib"
 
-    def update(self):
+        return z_lib, a_lib
+
+    def backpropagate(self, z_lib, a_lib, y):
+        delta = self._layers[-1].delta_L(z_lib[-1], a_lib[-1], y)
+        delta_lib = [delta]
+        for i, ly in enumerate(self._layers[::-1][1:-1]):
+            delta = ly.backpropagate(z_lib[-2-i], delta, self._weights[self._num_layers-2-i])
+            delta_lib = [delta] + delta_lib
+
+        assert len(delta_lib) == self._num_layers-1, "Check the length of delta_lib"
+
+        return delta_lib
+
+    def update(self, x, a_lib, delta_lib):
         """
         Calculate dC/dw from one sample
         :return:
         """
         delta_w = []
         delta_b = []
-        for l1, l2 in zip(self._layers[:-1], self._layers[1:]):
-            delta_w.append( np.dot(colvec(l2.get_delta()), colvec(l1.get_a()).T) )
-            delta_b.append( l2.get_delta() )
+        delta_w.append( np.dot(colvec(delta_lib[0]), colvec(x).T) )
+        delta_b.append( delta_lib[0] )
+        for i, (l1, l2) in enumerate(zip(self._layers[1:-1], self._layers[2:])):
+            delta_w.append( np.dot(colvec(delta_lib[i+1]), colvec(a_lib[i]).T) )
+            delta_b.append( delta_lib[i+1] )
         return delta_w, delta_b
 
-    def run_minibatch(self, mini_batch):
+    def run_minibatch(self, mini_batch, n):
         """
         Run one mini batch and update the weights
         :param mini_batch: list
+        :param n: int, size of entire data (not just of a mini batch)
         :return:
         """
         delta_w_sum = np.zeros(self._weights.shape)
         delta_b_sum = np.zeros(self._biases.shape)
 
         for x, y in mini_batch:
-            self.feedforward(x)
-            self.backpropagate(y)
-            delta_w, delta_b = self.update()
-            # delta_w_sum += delta_w
-            # delta_b_sum += delta_b
+            z_lib, a_lib = self.feedforward(x)
+            delta_lib = self.backpropagate(z_lib, a_lib, y)
+            delta_w, delta_b = self.update(x, a_lib, delta_lib)
             delta_w_sum = [dws+dw for dws, dw in zip(delta_w_sum, delta_w)]
             delta_b_sum = [dbs+db for dbs, db in zip(delta_b_sum, delta_b)]
 
@@ -87,7 +99,7 @@ class Network(object):
 
         self._biases -= self._eta * delta_b_sum/len(mini_batch)
         if self._lam is not None:
-            self._weights = (1.0 - self._eta*self._lam/len(mini_batch))*self._weights - self._eta*delta_w_sum/len(mini_batch)
+            self._weights = (1.0 - self._eta*self._lam/n)*self._weights - self._eta*delta_w_sum/len(mini_batch)
         else:
             self._weights -= self._eta * delta_w_sum/len(mini_batch)
         return
@@ -105,7 +117,7 @@ class Network(object):
             mini_batches = [training_data[k:k+self._mini_batch_size] for k in range(0, len(training_data), self._mini_batch_size)]
 
             for mini_batch in mini_batches:
-                self.run_minibatch(mini_batch)
+                self.run_minibatch(mini_batch, len(training_data))
 
             if monitor_training_data:
                 total_cost, total_accuracy = self.evaluate(training_data)
@@ -123,12 +135,11 @@ class Network(object):
         total_accuracy = 0.0
 
         for x, y in data:
-            self.feedforward(x)
-            total_cost += self._layers[-1].cost(y)
-            total_accuracy += self._layers[-1].accuracy(y)
+            _, a_lib = self.feedforward(x)
+            total_cost += self._layers[-1].cost(a_lib[-1], y)
+            total_accuracy += self._layers[-1].accuracy(a_lib[-1], y)
 
         if self._lam is not None:
-            # total_cost += (self._lam/2.0)*np.sum(self._weights**2)
             total_cost += (self._lam/2.0)*sum([x.sum() for x in (self._weights**2)])
 
         total_cost /= len(data)
@@ -172,14 +183,14 @@ if __name__ == "__main__":
         nn._biases[i] = colvec(b)
     ##########
 
-    # nn.sgd(data)
+    nn.sgd(data)
 
-    random.shuffle(data)
-    mini_batches = [data[k:k+mini_batch_size] for k in range(0, len(data), mini_batch_size)]
+    # random.shuffle(data)
+    # mini_batches = [data[k:k+mini_batch_size] for k in range(0, len(data), mini_batch_size)]
 
-    for mini_batch in mini_batches:
+    # for mini_batch in mini_batches:
         # print(mini_batch)
-        nn.run_minibatch(mini_batch)
+        # nn.run_minibatch(mini_batch)
         # print(nn._weights)
         # print(nn._biases)
 

@@ -36,7 +36,6 @@ class CrossEntropyCost(Cost):
     Cost = -(y*log(a) + (1-y)*log(1-a))
     """
     def cost(self, a, y):
-        # Todo: apply lambda to this calculation
         return np.sum(-(y*np.log(a) + (1.0-y)*np.log(1.0-a)))
 
     def cprime(self, a, y):
@@ -48,7 +47,6 @@ class LogLikelihoodCost(Cost):
     Cost = -(y*log(a))
     """
     def cost(self, a, y):
-        # Todo: apply lambda to this calculation
         return np.sum(-y*np.log(a))
 
     def cprime(self, a, y):
