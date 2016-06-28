@@ -123,10 +123,12 @@ class Network(object):
                 total_cost, total_accuracy = self.evaluate(training_data)
                 training_cost.append(total_cost)
                 training_accuracy.append(total_accuracy)
+                if e%10 is 0: print("Training accuracy at epoch %d: %.2f%%" %(e+1, total_accuracy*100.0))
             if monitor_evaluation_data and evaluation_data is not None:
                 total_cost, total_accuracy = self.evaluate(evaluation_data)
                 evaluation_cost.append(total_cost)
                 evaluation_accuracy.append(total_accuracy)
+                if e%10 is 0: print("Evaluation accuracy at epoch %d: %.2f%%" %(e+1, total_accuracy*100.0))
 
         return training_cost, training_accuracy, evaluation_cost, evaluation_accuracy
 
