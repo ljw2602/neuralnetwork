@@ -1,8 +1,10 @@
 def main():
     import numpy as np
+    from timeit import default_timer as timer
 
     from data import load_data_wrapper
     from layer import Sigmoid, Relu, Softmax
+    #from layer_parallel import Sigmoid, Relu, Softmax
     from layer_input import Input
     from layer_output import SigmoidOutput, SoftmaxOutput
     from cost import CrossEntropyCost, LogLikelihoodCost
@@ -17,14 +19,14 @@ def main():
     training_data = training_data#[:1000]
 
     l0 = Input(training_data[0][0].size)
-    l1 = Sigmoid(100)
-    # l2 = Relu(3)
-    # l3 = Softmax(3)
-    # l4 = SoftmaxOutput(3, LogLikelihoodCost)
-    l4 = SigmoidOutput(10, CrossEntropyCost)
+    l1 = Sigmoid(100, 0.0)
+    # l2 = Relu(100)
+    # l3 = Softmax(10, 0.0)
+    # l4 = SoftmaxOutput(10, LogLikelihoodCost)
+    l4 = SigmoidOutput(10, CrossEntropyCost, 0.0)
     layers = np.array([l0, l1, l4])
 
-    epoch = 30
+    epoch = 1
     mini_batch_size = 10
     eta = 0.5
     lam = 5.0
@@ -39,9 +41,16 @@ def main():
     #     nn._weights[i] = w
     #     nn._biases[i] = b
     ##########
-
-    training_cost, training_accuracy, evaluation_cost, evaluation_accuracy = nn.sgd(training_data, monitor_training_data = True, evaluation_data=validation_data, monitor_evaluation_data=True)
-
+    
+    start = timer()
+    training_cost, training_accuracy, \
+    evaluation_cost, evaluation_accuracy = nn.sgd(training_data,
+                                                  monitor_training_data = True,
+                                                  evaluation_data=validation_data,
+                                                  monitor_evaluation_data=True)
+    duration = timer() - start
+    print("Total time is %f seconds." % duration)
+    
     import csv
     with open("training_cost.csv", "w") as f:
         writer = csv.writer(f)
@@ -62,4 +71,6 @@ def main():
     # print(evaluation_accuracy)
 
 
-main()
+#main()
+import cProfile as profile
+profile.run("main()", sort="time")

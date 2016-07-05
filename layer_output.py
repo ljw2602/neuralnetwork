@@ -4,8 +4,8 @@ from layer import Sigmoid, Softmax
 
 class SigmoidOutput(Sigmoid):
 
-    def __init__(self, size_, cost_):
-        super(SigmoidOutput, self).__init__(size_)
+    def __init__(self, size_, cost_, dropout_):
+        super(SigmoidOutput, self).__init__(size_, dropout_)
         self._cost = cost_()
 
     def delta_L(self, z_L, a_L, y):
@@ -20,8 +20,8 @@ class SigmoidOutput(Sigmoid):
 
 class SoftmaxOutput(Softmax):
 
-    def __init__(self, size_, cost_):
-        super(SoftmaxOutput, self).__init__(size_)
+    def __init__(self, size_, cost_, dropout_):
+        super(SoftmaxOutput, self).__init__(size_, dropout_)
         self._cost = cost_()
 
     def cost(self, a, y):

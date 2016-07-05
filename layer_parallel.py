@@ -2,6 +2,7 @@ import numpy as np
 from abc import ABCMeta, abstractmethod
 
 import activation_function as fn
+from util import matmul
 
 
 class Layer(object):
@@ -60,7 +61,8 @@ class Layer(object):
         :param a: np.array
         :return: np.array
         """
-        z = b + np.dot(w, a)
+        #z = b + np.dot(w, a)
+        z = b + matmul(w, a)
         a = self.sigma(z)
         return z, a
 
@@ -71,7 +73,8 @@ class Layer(object):
         :param w_right: np.array, w connecting (l)th and (l+1)th layer
         :return: np.array
         """
-        return np.dot(self.sigmaprime(z).T, np.dot(w_right.T, delta_right))
+        #return np.dot(self.sigmaprime(z).T, np.dot(w_right.T, delta_right))
+        return matmul(self.sigmaprime(z).T, matmul(w_right.T, delta_right))
 
     @abstractmethod
     def sigma(self, z):

@@ -15,3 +15,9 @@ class Input(object):
             return self._size
         else:
             raise ValueError
+
+    def get_remaining_size(self):
+        return self.get_size()
+
+    def is_dropout(self):
+        return False
