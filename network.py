@@ -159,20 +159,23 @@ class Network(object):
             random.shuffle(training_data)
             mini_batches = [training_data[k:k+self._mini_batch_size] for k in range(0, len(training_data), self._mini_batch_size)]
 
-            for mini_batch in mini_batches:
+            for m, mini_batch in enumerate(mini_batches):
                 self.run_minibatch(mini_batch, len(training_data))
 
-            if monitor_training_data:
-                total_cost, total_accuracy = self.evaluate(training_data)
-                training_cost.append(total_cost)
-                training_accuracy.append(total_accuracy)
-                if e%1 is 0: print("Training accuracy at epoch %d: %.2f%%" %(e, total_accuracy*100.0))
-            if monitor_evaluation_data and evaluation_data is not None:
-                total_cost, total_accuracy = self.evaluate(evaluation_data)
-                evaluation_cost.append(total_cost)
-                evaluation_accuracy.append(total_accuracy)
-                if e%1 is 0: print("Evaluation accuracy at epoch %d: %.2f%%" %(e, total_accuracy*100.0))
-
+                if m%10 is 0:
+                    if monitor_training_data:
+                        total_cost, total_accuracy = self.evaluate(training_data)
+                        training_cost.append(total_cost)
+                        training_accuracy.append(total_accuracy)
+                        if e%1 is 0: print("Training accuracy at epoch %d: %.2f%%" %(e, total_accuracy*100.0))
+                    if monitor_evaluation_data and evaluation_data is not None:
+                        total_cost, total_accuracy = self.evaluate(evaluation_data)
+                        evaluation_cost.append(total_cost)
+                        evaluation_accuracy.append(total_accuracy)
+                        if e%1 is 0: print("Evaluation accuracy at epoch %d: %.2f%%" %(e, total_accuracy*100.0))
+                    if evaluation_accuracy[-1] > 0.95:
+                        return training_cost, training_accuracy, evaluation_cost, evaluation_accuracy
+                        
         return training_cost, training_accuracy, evaluation_cost, evaluation_accuracy
 
     def evaluate(self, data):

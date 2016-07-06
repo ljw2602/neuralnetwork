@@ -71,6 +71,6 @@ def main():
     # print(evaluation_accuracy)
 
 
-#main()
-import cProfile as profile
-profile.run("main()", sort="time")
+main()
+#import cProfile as profile
+#profile.run("main()", sort="time")
