@@ -150,10 +150,12 @@ class Network(object):
     def sgd(self, training_data,
             monitor_training_data = False,
             evaluation_data = None,
-            monitor_evaluation_data = False):
+            monitor_evaluation_data = False,
+            test_data = None):
 
-        evaluation_cost, evaluation_accuracy = [], []
         training_cost, training_accuracy = [], []
+        evaluation_cost, evaluation_accuracy = [], []
+        test_cost, test_accuracy = [], []
 
         for e in range(self._epoch):
             random.shuffle(training_data)
@@ -162,38 +164,59 @@ class Network(object):
             for m, mini_batch in enumerate(mini_batches):
                 self.run_minibatch(mini_batch, len(training_data))
 
-                if m%10 is 0:
-                    if monitor_training_data:
-                        total_cost, total_accuracy = self.evaluate(training_data)
-                        training_cost.append(total_cost)
-                        training_accuracy.append(total_accuracy)
-                        if e%1 is 0: print("Training accuracy at epoch %d: %.2f%%" %(e, total_accuracy*100.0))
-                    if monitor_evaluation_data and evaluation_data is not None:
-                        total_cost, total_accuracy = self.evaluate(evaluation_data)
-                        evaluation_cost.append(total_cost)
-                        evaluation_accuracy.append(total_accuracy)
-                        if e%1 is 0: print("Evaluation accuracy at epoch %d: %.2f%%" %(e, total_accuracy*100.0))
-                    if evaluation_accuracy[-1] > 0.95:
-                        return training_cost, training_accuracy, evaluation_cost, evaluation_accuracy
-                        
-        return training_cost, training_accuracy, evaluation_cost, evaluation_accuracy
+                # if m%10 is 0:
+                #     if monitor_training_data:
+                #         total_cost, total_accuracy, _ = self.evaluate(training_data)
+                #         training_cost.append(total_cost)
+                #         training_accuracy.append(total_accuracy)
+                #         if e%1 is 0: print("Training accuracy at epoch %d: %.2f%%" %(e, total_accuracy*100.0))
+                #     if monitor_evaluation_data and evaluation_data is not None:
+                #         total_cost, total_accuracy, _ = self.evaluate(evaluation_data)
+                #         evaluation_cost.append(total_cost)
+                #         evaluation_accuracy.append(total_accuracy)
+                #         if e%1 is 0: print("Evaluation accuracy at epoch %d: %.2f%%" %(e, total_accuracy*100.0))
+
+            if monitor_training_data:
+                total_cost, total_accuracy, prediction = self.evaluate(training_data)
+                training_cost.append(total_cost)
+                training_accuracy.append(total_accuracy)
+                if e % 1 is 0:
+                    print("Training cost at epoch %d: %.2f" % (e, total_cost))
+                    print("Training accuracy at epoch %d: %.2f%%" % (e, total_accuracy * 100.0))
+            if monitor_evaluation_data and evaluation_data is not None:
+                total_cost, total_accuracy, prediction = self.evaluate(evaluation_data)
+                evaluation_cost.append(total_cost)
+                evaluation_accuracy.append(total_accuracy)
+                if e % 1 is 0:
+                    print("Evaluation cost at epoch %d: %.2f" % (e, total_cost))
+                    print("Evaluation accuracy at epoch %d: %.2f%%" % (e, total_accuracy * 100.0))
+
+        if test_data is not None:
+            test_cost, test_accuracy, prediction = self.evaluate(test_data)
+            import pandas as pd
+            from scipy.stats import itemfreq
+            prediction = pd.DataFrame(prediction, columns = ["Prediction","True"])
+            print(itemfreq(prediction))
+
+        return training_cost, training_accuracy, evaluation_cost, evaluation_accuracy, test_cost, test_accuracy
 
     def evaluate(self, data):
         total_cost = 0.0
         total_accuracy = 0.0
+        prediction = []
 
         for x, y in data:
             # _, a_lib = self.feedforward(x)
             a_lib = []
             a = x
             for i, (ly1, ly2) in enumerate(zip(self._layers[:-1], self._layers[1:])):
-            # for i, ly in enumerate(self._layers[1:]):
                 remaining_ratio = ly1.get_remaining_size() / float(ly1.get_size())
                 _, a = ly2.feedforward(self._biases[i], self._weights[i]*remaining_ratio, a)
                 a_lib.append(a)
 
             total_cost += self._layers[-1].cost(a_lib[-1], y)
             total_accuracy += self._layers[-1].accuracy(a_lib[-1], y)
+            prediction.append((np.argmax(a_lib[-1]), np.argmax(y)))
 
         if self._lam is not None:
             total_cost += (self._lam/2.0)*sum([x.sum() for x in (self._weights**2)])
@@ -201,7 +224,7 @@ class Network(object):
         total_cost /= len(data)
         total_accuracy /= len(data)
 
-        return total_cost, total_accuracy
+        return total_cost, total_accuracy, prediction
 
 if __name__ == "__main__":
 

@@ -4,7 +4,7 @@ from layer import Sigmoid, Softmax
 
 class SigmoidOutput(Sigmoid):
 
-    def __init__(self, size_, cost_, dropout_):
+    def __init__(self, size_, cost_, dropout_=0.0):
         super(SigmoidOutput, self).__init__(size_, dropout_)
         self._cost = cost_()
 
@@ -20,7 +20,7 @@ class SigmoidOutput(Sigmoid):
 
 class SoftmaxOutput(Softmax):
 
-    def __init__(self, size_, cost_, dropout_):
+    def __init__(self, size_, cost_, dropout_=0.0):
         super(SoftmaxOutput, self).__init__(size_, dropout_)
         self._cost = cost_()
 

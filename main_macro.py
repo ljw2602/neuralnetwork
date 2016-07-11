@@ -2,9 +2,8 @@ def main():
     import numpy as np
     from timeit import default_timer as timer
 
-    from data import load_data_wrapper
+    from data_macro import load_data_wrapper
     from layer import Sigmoid, Relu, Softmax
-    #from layer_parallel import Sigmoid, Relu, Softmax
     from layer_input import Input
     from layer_output import SigmoidOutput, SoftmaxOutput
     from cost import CrossEntropyCost, LogLikelihoodCost
@@ -16,20 +15,22 @@ def main():
     # validation_data = list(zip(X, Y))
 
     training_data, validation_data, test_data = load_data_wrapper()
-    training_data = training_data#[:1000]
+    # training_data = training_data[:100]
 
     l0 = Input(training_data[0][0].size)
-    l1 = Sigmoid(100, 0.0)
-    # l2 = Relu(100)
+    # l1 = Sigmoid(50, 0.5)
+    l2 = Relu(50, 0.5)
+    l3 = Relu(50, 0.5)
+    # l1 = Relu(100, 0.0)
     # l3 = Softmax(10, 0.0)
-    # l4 = SoftmaxOutput(10, LogLikelihoodCost)
-    l4 = SigmoidOutput(10, CrossEntropyCost, 0.0)
-    layers = np.array([l0, l1, l4])
+    l4 = SoftmaxOutput(5, LogLikelihoodCost)
+    # l4 = SigmoidOutput(5, CrossEntropyCost, 0.0)
+    layers = np.array([l0, l2, l3, l4])
 
-    epoch = 1
+    epoch = 30
     mini_batch_size = 10
-    eta = 0.5
-    lam = 5.0
+    eta = 0.0001
+    lam = 0.0
 
     nn = Network(layers, eta, mini_batch_size, epoch, lam)
 
@@ -44,10 +45,13 @@ def main():
     
     start = timer()
     training_cost, training_accuracy, \
-    evaluation_cost, evaluation_accuracy = nn.sgd(training_data,
-                                                  monitor_training_data = True,
-                                                  evaluation_data=validation_data,
-                                                  monitor_evaluation_data=True)
+    evaluation_cost, evaluation_accuracy, \
+    test_cost, test_accuracy = nn.sgd(training_data,
+                                      monitor_training_data = True,
+                                      evaluation_data = validation_data,
+                                      monitor_evaluation_data = True,
+                                      test_data = test_data,
+                                      )
     duration = timer() - start
     print("Total time is %f seconds." % duration)
     
@@ -65,10 +69,8 @@ def main():
         writer = csv.writer(f)
         writer.writerow(evaluation_accuracy)
 
-    # print(training_cost)
-    # print(training_accuracy)
-    # print(evaluation_cost)
-    # print(evaluation_accuracy)
+    print(test_cost)
+    print(test_accuracy*100.0)
 
 
 main()
