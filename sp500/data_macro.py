@@ -6,6 +6,12 @@ from sklearn.cross_validation import train_test_split
 
 
 def load_from_fred(start, end):
+    """
+    Load data from FRED (St. Louis Fed) using Pandas DataReader
+    :param start: datetime
+    :param end: datetime
+    :return: pd.DataFrame
+    """
     fredlist = ["GDPC1",  # GDP
                 "UNRATE",  # Unemployment rate
                 "CPIAUCSL", "PPIACO", "USSTHPI",  # CPI, PPI, HPI
@@ -21,6 +27,12 @@ def load_from_fred(start, end):
 
 
 def load_from_yahoo(start, end):
+    """
+    Load data from Yahoo Finance using Pandas DataReader
+    :param start: datetime
+    :param end: datetime
+    :return: pd.DataFrame
+    """
     yahoolist = ["^GSPC", "^FTSE", "^GDAXI", "^N225", "^HSI",  # Index
                  "GLD", "OIL", "SLV",  # Commodities
                 ]
@@ -34,6 +46,12 @@ def load_from_yahoo(start, end):
 
 
 def concat_data(fred, yahoo):
+    """
+    Concatenate two dataframes, resample every business day, forward-fill empty cells
+    :param fred: pd.DataFrame
+    :param yahoo: pd.DataFrame
+    :return: pd.DataFrame
+    """
     df = pd.concat([fred, yahoo], axis=1)
     df_fill = df.resample('1B').ffill()
     df_fill.dropna(axis=0, inplace=True)
@@ -41,23 +59,39 @@ def concat_data(fred, yahoo):
 
 
 def remove_some_data(df):
+    """
+    Remove unused data columns
+    :param df: pd.DataFrame
+    :return: pd.DataFrame
+    """
     drop_list = ['^FTSE Volume', '^GDAXI Volume', '^N225 Volume', '^HSI Volume']
     df.drop(drop_list, 1, inplace=True)
     return df
 
 
 def categorize_y(df):
+    """
+    1 month return (%) is translated into categorical variable
+    Boundaries are set at [-40, -5, -1, 1, 5, 20](%)
+    :param df: pd.DataFrame
+    :return: pd.DataFrame
+    """
     ret_range = np.array([-40, -5, -1, 1, 5, 20])
     ret_label = np.arange(ret_range.shape[0]-1)
     df['1M Return(%)'] = pd.cut(df['1M Return(%)'], ret_range, labels=ret_label)
-    # df['1M Return(%)'], bins = pd.qcut(df['1M Return(%)'], 10, labels=range(10), retbins=True)
-    # print("Bins: "); print(bins)
+
     assert not df.isnull().any().any(), "change ret_range"
-    df.to_csv('temp.csv')
+
     return df
 
 
 def serialize(df, n_window):
+    """
+    Serialize dataframe with lookback period of n_window
+    :param df: pd.DataFrame
+    :param n_window: int
+    :return: pd.DataFrame, pd.DataFrame
+    """
     from sklearn.preprocessing import normalize
     X = df.drop('1M Return(%)', axis=1)
     X = normalize(X, axis=0)
@@ -69,6 +103,12 @@ def serialize(df, n_window):
 
 
 def divide(x, y):
+    """
+    Split data into train/validation/test = 5/1/1
+    :param x: list of pd.DataFrame
+    :param y: list of int
+    :return:
+    """
     ratio = np.array([5, 1, 1])
     y = list(y)
     X_train, X_test, y_train, y_test = train_test_split(x, y, test_size = ratio[2]/ratio.sum())
@@ -78,18 +118,17 @@ def divide(x, y):
     validation_data = (X_valid, y_valid)
     test_data = (X_test, y_test)
 
-    # ratio = np.array([5,1,1])
-    # ratio = np.cumsum(ratio)
-    # bound = [0] + [int(len(x) * ratio[i] / ratio[-1]) for i in range(len(ratio))]
-
-    # training_data = (x[bound[0]:bound[1]], y[bound[0]:bound[1]])
-    # validation_data = (x[bound[1]:bound[2]], y[bound[1]:bound[2]])
-    # test_data = (x[bound[2]:bound[3]], y[bound[2]:bound[3]])
-
     return training_data, validation_data, test_data
 
 
 def load_data(n_window, start = datetime.datetime(1960, 1, 1), end = datetime.datetime.today()):
+    """
+    Prepare data
+    :param n_window: int
+    :param start: datatime
+    :param end: datatime
+    :return:
+    """
     fred = load_from_fred(start, end)
     yahoo = load_from_yahoo(start, end)
 
@@ -103,6 +142,10 @@ def load_data(n_window, start = datetime.datetime(1960, 1, 1), end = datetime.da
 
 
 def load_data_wrapper():
+    """
+    Preprocess data
+    :return:
+    """
     n_window = 28  # rolling window
     n_macro = 28  # number of macro
     n = n_window*n_macro
@@ -127,6 +170,12 @@ def load_data_wrapper():
 
 
 def vectorized_result(j):
+    """
+    Transform categorical data into vector form
+    ex> 5 -> [0,0,0,0,1,0,0]
+    :param j: int
+    :return: np.Array
+    """
     e = np.zeros((5, 1))
     e[j] = 1.0
     return e

@@ -1,7 +1,7 @@
 import numpy as np
 import random
 
-from util import colvec
+from neuralnetwork.util import colvec
 
 
 class Network(object):
@@ -151,7 +151,8 @@ class Network(object):
             monitor_training_data = False,
             evaluation_data = None,
             monitor_evaluation_data = False,
-            test_data = None):
+            test_data = None,
+            output = True):
 
         training_cost, training_accuracy = [], []
         evaluation_cost, evaluation_accuracy = [], []
@@ -180,23 +181,27 @@ class Network(object):
                 total_cost, total_accuracy, prediction = self.evaluate(training_data)
                 training_cost.append(total_cost)
                 training_accuracy.append(total_accuracy)
-                if e % 1 is 0:
-                    print("Training cost at epoch %d: %.2f" % (e, total_cost))
-                    print("Training accuracy at epoch %d: %.2f%%" % (e, total_accuracy * 100.0))
-            if monitor_evaluation_data and evaluation_data is not None:
+                print("Training cost at epoch %d: %.2f" % (e, total_cost))
+                print("Training accuracy at epoch %d: %.2f%%" % (e, total_accuracy * 100.0))
+
+            if monitor_evaluation_data and evaluation_data is not None and e%10 is 0:
                 total_cost, total_accuracy, prediction = self.evaluate(evaluation_data)
                 evaluation_cost.append(total_cost)
                 evaluation_accuracy.append(total_accuracy)
-                if e % 1 is 0:
-                    print("Evaluation cost at epoch %d: %.2f" % (e, total_cost))
-                    print("Evaluation accuracy at epoch %d: %.2f%%" % (e, total_accuracy * 100.0))
+                print("Evaluation cost at epoch %d: %.2f" % (e, total_cost))
+                print("Evaluation accuracy at epoch %d: %.2f%%" % (e, total_accuracy * 100.0))
+                if total_accuracy > 0.995:
+                    break
 
         if test_data is not None:
             test_cost, test_accuracy, prediction = self.evaluate(test_data)
             import pandas as pd
             from scipy.stats import itemfreq
             prediction = pd.DataFrame(prediction, columns = ["Prediction","True"])
-            print(itemfreq(prediction))
+
+        if output is True:
+            self.output_summary(training_cost, training_accuracy,
+                                evaluation_cost, evaluation_accuracy,)
 
         return training_cost, training_accuracy, evaluation_cost, evaluation_accuracy, test_cost, test_accuracy
 
@@ -225,6 +230,26 @@ class Network(object):
         total_accuracy /= len(data)
 
         return total_cost, total_accuracy, prediction
+
+    def output_summary(self, training_cost, training_accuracy,\
+                       evaluation_cost, evaluation_accuracy):
+        import csv
+        import os
+        if not os.path.exists('../data'): os.makedirs('../data')
+
+        with open("../data/training_cost.csv", "w") as f:
+            writer = csv.writer(f)
+            writer.writerow(training_cost)
+        with open("../data/training_accuracy.csv", "w") as f:
+            writer = csv.writer(f)
+            writer.writerow(training_accuracy)
+        with open("../data/evaluation_cost.csv", "w") as f:
+            writer = csv.writer(f)
+            writer.writerow(evaluation_cost)
+        with open("../data/evaluation_accuracy.csv", "w") as f:
+            writer = csv.writer(f)
+            writer.writerow(evaluation_accuracy)
+
 
 if __name__ == "__main__":
 

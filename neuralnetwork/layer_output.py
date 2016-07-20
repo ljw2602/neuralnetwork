@@ -1,6 +1,6 @@
 import numpy as np
 
-from layer import Sigmoid, Softmax
+from neuralnetwork.layer import Sigmoid, Softmax
 
 class SigmoidOutput(Sigmoid):
 

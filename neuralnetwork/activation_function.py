@@ -1,6 +1,6 @@
 import numpy as np
 
-from util import colvec
+from neuralnetwork.util import colvec
 
 def sigmoid(z):
     return 1 / (1 + np.exp(-z))

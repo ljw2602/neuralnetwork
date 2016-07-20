@@ -89,3 +89,7 @@ ENV/
 .ropeproject
 
 .idea/
+sp500_result/
+mnist_result/
+recommender_result/
+

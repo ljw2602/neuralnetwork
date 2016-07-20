@@ -1,7 +1,7 @@
 import numpy as np
 from abc import ABCMeta, abstractmethod
 
-import activation_function as fn
+import neuralnetwork.activation_function as fn
 
 
 class Layer(object):
